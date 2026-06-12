@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "Smoosh",
+    "version": "1.0",
+    "description": "Lossless image compression, same format.",
+    "permissions": [
+        "downloads"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Smoosh"
+    }
+
+}
