@@ -813,6 +813,7 @@ if(G>r)r=G;i++}while(i<y){A[i<<1]=0;A[(i<<1)+1]=0;i++}return r}return v}();
 		*/
 		var frms = [];
 		for(var j=0; j<bufs.length; j++) {
+			console.log("bufs[j] byteLength:", bufs[j].byteLength, "j:", j);
 			var cimg = new Uint8Array(bufs[j]), cimg32 = new Uint32Array(cimg.buffer);
 			var nimg;
 			

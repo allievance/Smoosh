@@ -17,7 +17,7 @@ compressBtn.addEventListener("click", () => {
         status.textContent = `Read ${imageData.byteLength} bytes from ${file.name} (${file.type}, ${file.size} bytes)`;
         
         if (file.type === "image/png") {
-            const compressed = compressPNG(imageData);
+            const compressed = compressPNG(new Uint8Array(imageData));
             status.textContent = `Compressed: ${imageData.byteLength} bytes → ${compressed.byteLength} bytes`;
         } else if (file.type === "image/jpeg") {
             // compress as JPEG
