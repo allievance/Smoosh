@@ -18,6 +18,15 @@ compressBtn.addEventListener("click", () => {
         
         if (file.type === "image/png") {
             const compressed = compressPNG(new Uint8Array(imageData));
+
+            const blob = new Blob([compressed], { type: "image/png"});
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = file.name;
+            a.click();
+            
             status.textContent = `Compressed: ${imageData.byteLength} bytes → ${compressed.byteLength} bytes`;
         } else if (file.type === "image/jpeg") {
             // compress as JPEG

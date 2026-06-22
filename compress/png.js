@@ -103,6 +103,56 @@ function recompressIDAT(rawPixels) {
     return pako.deflate(rawPixels, { level: 9 });
 }
 
+function writeChunk(type, data) {
+    const length = data.length;
+    const chunk = new Uint8Array(12 + length);
+
+    chunk[0] = (length >> 24) & 0xff;
+    chunk[1] = (length >> 16) & 0xff;
+    chunk[2] = (length >> 8) & 0xff;
+    chunk[3] = length & 0xff;
+
+    for (let i = 0; i < 4; i++) {
+        chunk[4 + i] = type.charCodeAt(i);
+    }
+
+    chunk.set(data, 8);
+
+    // CRC placeholder - 4 bytes for now
+    chunk[8 + length] = 0;
+    chunk[9 + length] = 0;
+    chunk[10 + length] = 0;
+    chunk[11 + length] = 0;
+
+    return chunk;
+}
+
+function assemblePNG(chunks, recompressedIDAT) {
+    const ihdrChunk = findChunk(chunks, "IHDR");
+    const iendChunk = findChunk(chunks, "IEND");
+
+    const ihdrBytes = writeChunk("IHDR", ihdrChunk.data);
+    const idatBytes = writeChunk("IDAT", recompressedIDAT);
+    const iendBytes = writeChunk("IEND", iendChunk.data)
+
+    const totalLength = signature.length + ihdrBytes.length + idatBytes.length + iendBytes.length;
+    const output = new Uint8Array(totalLength);
+
+    let offset = 0;
+    output.set(new Uint8Array(signature), offset);
+    offset += signature.length;
+
+    output.set(ihdrBytes, offset);
+    offset += ihdrBytes.length;
+
+    output.set(idatBytes, offset);
+    offset += idatBytes.length;
+
+    output.set(iendBytes, offset);
+
+    return output;
+}
+
 // ================================================
 // IMAGE FORMAT HELPERS
 // ================================================
@@ -160,7 +210,6 @@ function readScanlines(raw, width, height, bitDepth, colorType) {
 // MAIN PIPELINE
 // ================================================
 function compressPNG(bytes) {
-
     if (!checkPNGSignature(bytes)) {
         throw new Error("Not a valid PNG.");
     }
@@ -172,6 +221,8 @@ function compressPNG(bytes) {
     );
 
     const raw = decompressIDAT(chunks);
+    const recompressed = recompressIDAT(raw);
+    const output = assemblePNG(chunks, recompressed);
 
-    return raw; //TEMP: just return raw for now
+    return output;
 }
